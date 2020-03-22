@@ -1,0 +1,8 @@
+git status
+git add cheminfichier
+git commmit -m "message"
+git push
+
+
+xxx git commit -am "message"
+Fait add et commit en même temps, sur tout le git (à éviter)
