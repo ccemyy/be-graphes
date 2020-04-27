@@ -28,7 +28,7 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         
         Label [] tabLabel = new Label[sizeGraph];
         BinaryHeap<Label> heap = new BinaryHeap<Label>();
-        Arc [] predecessorArc = new Arc[sizeGraph];
+        Arc [] predecessorArcs = new Arc[sizeGraph];
         
         Label start = new Label(data.getOrigin());
         tabLabel[start.getNode().getId()] = start;
@@ -36,60 +36,56 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         start.setInHeap();
         start.setCost(0);
 
-		/* Tant qu'il existe des sommets non marqués */
+		// when there are unmarked nodes 
 		while(!heap.isEmpty() && !fin){      	
 
 			Label current= heap.deleteMin();
 			current.setMark();
-			/* Quand on a atteint la destination, on s'arrête */
+			// stop when we reach the destination
 			if (current.getNode() == data.getDestination()) {
 				fin = true;
 			}
-			/* Parcours des successeurs du sommet courant */
-			Iterator<Arc> arc = current.getNode().getSuccessors().iterator();
-			while (arc.hasNext()) {
-				Arc arcIter = arc.next();
-
-				// On vérifie que l'on peut réellement prendre cet arc
-				if (!data.isAllowed(arcIter)) {
+			// traversing successors of the current node 
+			for(Arc arc : current.getNode().getSuccessors()) {
+				// checking that the current arc can be taken
+				if (!data.isAllowed(arc)) {
 					continue;
 				}
 
-				Node successeur = arcIter.getDestination();
+				Node successeur = arc.getDestination();
 
-				/* On recupere le label correspondant au noeud dans le tableau de labels */
+				// Recovering the label corresponding to the node in the label table
 				Label successeurLabel = tabLabel[successeur.getId()];
 
-				/* Si le label n'existe pas encore */
-				/* Alors on le crée */
+				// If the label does not yet exist
+				// Creating it
 				if (successeurLabel == null) {
 					successeurLabel = newLabel(successeur, data);
 					tabLabel[successeurLabel.getNode().getId()] = successeurLabel;
-					/* On incrémente le nombre de sommets visités pour le test de performance */
+					// incrementing the number of vertices visited for the performance test
 					this.nbPassNode++;
 				}
 
-				/* Si le successeur n'est pas encore marqué */
+				// If the successor is not yet marked 
 				if (!successeurLabel.isMark()) {
-					/* Si on obtient un meilleur coût */
-					/* Alors on le met à jour */
-
-					if((successeurLabel.getCost()>(current.getCost()+data.getCost(arcIter)
+					// If we get a better cost
+					// So updating it
+					if((successeurLabel.getCost()>(current.getCost()+data.getCost(arc)
 						+(successeurLabel.getCost()-successeurLabel.getCost()))) 
 						|| (successeurLabel.getCost()==Float.POSITIVE_INFINITY)){
-						successeurLabel.setCost(current.getCost()+(float)data.getCost(arcIter));
+						successeurLabel.setCost(current.getCost()+(float)data.getCost(arc));
 						successeurLabel.setPredecessor(current.getNode());;
-						/* Si le label est déjà dans le tas */
-						/* Alors on met à jour sa position dans le tas */
+						// If the label is already in the heap
+						// So we update its position in the heap
 						if(successeurLabel.isInHeap()) {
 							heap.remove(successeurLabel);
 						}
-						/* Sinon on l'ajoute dans le tas */
+						// Otherwise we add it to the heap
 						else {
 							successeurLabel.setInHeap();
 						}
 						heap.insert(successeurLabel);
-						predecessorArc[arcIter.getDestination().getId()] = arcIter;
+						predecessorArcs[arc.getDestination().getId()] = arc;
 					}
 				}
 
@@ -97,17 +93,17 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 		}
 
 		// Destination has no predecessor, the solution is infeasible...
-		if (predecessorArc[data.getDestination().getId()] == null) {
+		if (predecessorArcs[data.getDestination().getId()] == null) {
 			solution = new ShortestPathSolution(data, Status.INFEASIBLE);
 		} else {
 
 			// Create the path from the array of predecessors...
 			ArrayList<Arc> arcs = new ArrayList<>();
-			Arc arc = predecessorArc[data.getDestination().getId()];
+			Arc arc = predecessorArcs[data.getDestination().getId()];
 
 			while (arc != null) {
 				arcs.add(arc);
-				arc = predecessorArc[arc.getOrigin().getId()];
+				arc = predecessorArcs[arc.getOrigin().getId()];
 			}
 
 			// Reverse the path...
@@ -121,12 +117,12 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 		return solution;
 	}
 
-	/* Crée et retourne le Label correspondant au Node */
+	// Creating and return the Label corresponding to the Node
 	protected Label newLabel(Node node, ShortestPathData data) {
 		return new Label(node);
 	}
 	
-	/* Retourne le nombre de sommets visités */
+	// Return the number of nodes visited
 	public int getNbPassNode() {
 		return this.nbPassNode;
 	}
