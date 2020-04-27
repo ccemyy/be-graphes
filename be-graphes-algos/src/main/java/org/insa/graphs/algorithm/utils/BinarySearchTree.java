@@ -3,6 +3,8 @@ package org.insa.graphs.algorithm.utils;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.insa.graphs.algorithm.shortestpath.Label;
+
 public class BinarySearchTree<E extends Comparable<E>> implements PriorityQueue<E> {
 
     // Underlying implementation
@@ -61,4 +63,10 @@ public class BinarySearchTree<E extends Comparable<E>> implements PriorityQueue<
         return min;
     }
 
+/*	public boolean contains(E x) {
+		// TODO Auto-generated method stub
+	        boolean c = contains(root, x);
+	        return c;
+	}
+*/
 }
