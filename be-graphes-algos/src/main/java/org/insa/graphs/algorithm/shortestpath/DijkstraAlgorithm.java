@@ -16,6 +16,14 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         super(data);
         this.nbPassNode = 0;
     }
+    
+	public void setNbPassNode(int nbPassNode) {
+		this.nbPassNode = nbPassNode;
+	}
+
+	public int getNbPassNode() {
+		return this.nbPassNode;
+	}
 
     @Override
     protected ShortestPathSolution doRun() {
@@ -24,79 +32,93 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         // TODO:
         boolean fin = false;
         Graph graph = data.getGraph();
-        int sizeGraph = graph.size();
+        int nbNodes = graph.size();
         
-        Label [] tabLabel = new Label[sizeGraph];
+        Label [] labels = new Label[nbNodes];
         BinaryHeap<Label> heap = new BinaryHeap<Label>();
-        Arc [] predecessorArcs = new Arc[sizeGraph];
-        
-        Label start = new Label(data.getOrigin());
-        tabLabel[start.getNode().getId()] = start;
+       
+        Label start = newLabel(data.getOrigin(),data);
+        labels[start.getNode().getId()] = start;
         heap.insert(start);
         start.setInHeap();
         start.setCost(0);
-
-		// when there are unmarked nodes 
+        
+        // Notify observers about the first event (origin processed).
+        notifyOriginProcessed(data.getOrigin());
+        
+        Arc [] predecessorArcs = new Arc[nbNodes];
+        
 		while(!heap.isEmpty() && !fin){      	
 
 			Label current= heap.deleteMin();
+			// observer of node is marked
+			notifyNodeMarked(current.getNode());
+
 			current.setMark();
-			// stop when we reach the destination
-			if (current.getNode() == data.getDestination()) {
-				fin = true;
+			
+			if(!heap.isValid()) {
+				System.out.println("tas non valide");
+			}else {
+				System.out.println("tas valide");
 			}
+			
 			// traversing successors of the current node 
 			for(Arc arc : current.getNode().getSuccessors()) {
 				// checking that the current arc can be taken
 				if (!data.isAllowed(arc)) {
 					continue;
 				}
-
-				Node successeur = arc.getDestination();
+				// stop when we reach the destination
+				if (current.getNode() == data.getDestination()) {
+					fin = true;
+				}
+				Node successor = arc.getDestination();
 
 				// Recovering the label corresponding to the node in the label table
-				Label successeurLabel = tabLabel[successeur.getId()];
+				Label sucLab = labels[successor.getId()];
 
-				// If the label does not yet exist
-				// Creating it
-				if (successeurLabel == null) {
-					successeurLabel = newLabel(successeur, data);
-					tabLabel[successeurLabel.getNode().getId()] = successeurLabel;
-					// incrementing the number of vertices visited for the performance test
+				// If the label does not yet exist, creating it
+				if (sucLab == null) {
+					sucLab = newLabel(successor, data);
+					labels[sucLab.getNode().getId()] = sucLab;
 					this.nbPassNode++;
 				}
 
 				// If the successor is not yet marked 
-				if (!successeurLabel.isMark()) {
-					// If we get a better cost
-					// So updating it
-					if((successeurLabel.getCost()>(current.getCost()+data.getCost(arc)
-						+(successeurLabel.getCost()-successeurLabel.getCost()))) 
-						|| (successeurLabel.getCost()==Float.POSITIVE_INFINITY)){
-						successeurLabel.setCost(current.getCost()+(float)data.getCost(arc));
-						successeurLabel.setPredecessor(current.getNode());;
+				if (!sucLab.isMark()) {
+					// If we get a better cost, updating it
+					if((sucLab.getCost()>(current.getCost()+data.getCost(arc)+(sucLab.getCost()-sucLab.getCost()))) || (sucLab.getCost()==Float.POSITIVE_INFINITY)){
+						sucLab.setCost(current.getCost()+(float)data.getCost(arc));
+						sucLab.setPredecessor(current.getNode());;
 						// If the label is already in the heap
 						// So we update its position in the heap
-						if(successeurLabel.isInHeap()) {
-							heap.remove(successeurLabel);
+						if(sucLab.isInHeap()) {
+							heap.remove(sucLab);
 						}
 						// Otherwise we add it to the heap
 						else {
-							successeurLabel.setInHeap();
+							sucLab.setInHeap();
 						}
-						heap.insert(successeurLabel);
+						heap.insert(sucLab);
 						predecessorArcs[arc.getDestination().getId()] = arc;
 					}
 				}
-
 			}
+			/*// show performance
+			System.out.println("cout label marqué : " + current.getCost());
+			System.out.println("nb successeurs testés : " + current.getNode().getSuccessors().size());
+			System.out.println("taille tas : " + heap.size());*/
 		}
+		
 
 		// Destination has no predecessor, the solution is infeasible...
 		if (predecessorArcs[data.getDestination().getId()] == null) {
 			solution = new ShortestPathSolution(data, Status.INFEASIBLE);
 		} else {
 
+			// The destination has been found, notify the observes
+			notifyDestinationReached(data.getDestination());
+			
 			// Create the path from the array of predecessors...
 			ArrayList<Arc> arcs = new ArrayList<>();
 			Arc arc = predecessorArcs[data.getDestination().getId()];
@@ -117,15 +139,11 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 		return solution;
 	}
 
-	// Creating and return the Label corresponding to the Node
+	// Creating and return the Label for Dijkstra
 	protected Label newLabel(Node node, ShortestPathData data) {
 		return new Label(node);
 	}
 	
-	// Return the number of nodes visited
-	public int getNbPassNode() {
-		return this.nbPassNode;
-	}
 
 }
 

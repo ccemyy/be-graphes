@@ -67,16 +67,19 @@ public class Label implements Comparable<Label>{
 	public int compareTo(Label other) {
 		// TODO Auto-generated method stub
 		int result;
-		if (this.getCost() < other.getCost()) {
+		if (this.getTotalCost() < other.getTotalCost()) {
 			result = -1;
 		}
-		else if (this.getCost() == other.getCost()) {
+		else if (this.getTotalCost() == other.getTotalCost()) {
 			result = 0;
 		}
 		else {
 			result = 1;
 		}
 		return result;
+	}
+	public float getTotalCost() {
+		return this.cost;
 	}
 
 	
