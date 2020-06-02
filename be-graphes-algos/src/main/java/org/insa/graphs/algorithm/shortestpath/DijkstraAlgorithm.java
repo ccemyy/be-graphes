@@ -35,10 +35,9 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         int nbNodes = graph.size();
         
         Label [] labels = new Label[nbNodes];
-        BinaryHeap<Label> heap = new BinaryHeap<Label>();
-       
         Label start = newLabel(data.getOrigin(),data);
         labels[start.getNode().getId()] = start;
+        BinaryHeap<Label> heap = new BinaryHeap<Label>();
         heap.insert(start);
         start.setInHeap();
         start.setCost(0);
@@ -47,7 +46,10 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
         notifyOriginProcessed(data.getOrigin());
         
         Arc [] predecessorArcs = new Arc[nbNodes];
-        
+      
+        //get start time
+        long startTime=System.currentTimeMillis();   
+
 		while(!heap.isEmpty() && !fin){      	
 
 			Label current= heap.deleteMin();
@@ -56,11 +58,11 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 
 			current.setMark();
 			
-			if(!heap.isValid()) {
+			/*if(!heap.isValid()) {
 				System.out.println("tas non valide");
 			}else {
 				System.out.println("tas valide");
-			}
+			}*/
 			
 			// traversing successors of the current node 
 			for(Arc arc : current.getNode().getSuccessors()) {
@@ -109,8 +111,8 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 			System.out.println("nb successeurs testés : " + current.getNode().getSuccessors().size());
 			System.out.println("taille tas : " + heap.size());*/
 		}
-		
 
+        
 		// Destination has no predecessor, the solution is infeasible...
 		if (predecessorArcs[data.getDestination().getId()] == null) {
 			solution = new ShortestPathSolution(data, Status.INFEASIBLE);
@@ -135,7 +137,9 @@ public class DijkstraAlgorithm extends ShortestPathAlgorithm {
 			solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcs));
 
 		}
-
+		//get end time
+        long endTime=System.currentTimeMillis(); 
+        //System.out.println("execution time： "+(endTime-startTime)+"ms");
 		return solution;
 	}
 

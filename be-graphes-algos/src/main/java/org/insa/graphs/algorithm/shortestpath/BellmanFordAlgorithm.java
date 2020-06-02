@@ -35,6 +35,9 @@ public class BellmanFordAlgorithm extends ShortestPathAlgorithm {
 
         // Initialize array of predecessors.
         Arc[] predecessorArcs = new Arc[nbNodes];
+     
+        //get start time
+        long startTime=System.currentTimeMillis(); 
 
         // Actual algorithm, we will assume the graph does not contain negative
         // cycle...
@@ -93,7 +96,11 @@ public class BellmanFordAlgorithm extends ShortestPathAlgorithm {
             // Create the final solution.
             solution = new ShortestPathSolution(data, Status.OPTIMAL, new Path(graph, arcs));
         }
-
+        
+        //get end time
+        long endTime=System.currentTimeMillis();  
+        System.out.println("execution time： "+(endTime-startTime)+"ms");
+        
         return solution;
     }
 
